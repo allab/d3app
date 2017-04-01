@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title> d3 samples </title>
+  </head>
+
+  <body >
+
+    <a href = "index.html"> back </a>
+    <br>
+    <script src="http://d3js.org/d3.v3.min.js"
+            charset="utf-8">
+    </script>
+
+    <script>
+    var url = 'https://gist.githubusercontent.com/d3byex/25129228aa50c30ef01f/raw/c1c3ad9fa745c42c5410fba29cefccac47cd0ec7/familytree.json';
+  //  var url = 'https://gist.githubusercontent.com/d3byex/25129228aa50c30ef01f/raw/2f8664d0eb75ef606f412f9647116954ff0af41d/radial.json'; //url='https://gist.githubusercontent.com/d3byex/25129228aa50c30ef01f/raw/ddc1d7cf560f8fff84dd9005e5bdbdd43b39a91f/flare.json';
+    d3.json(url, function(err, data){
+        var width = 960, height = 500,
+          nodeRadius = 10,
+          margin = {
+              left: 50, top: 10,
+              bottom: 10, right: 40
+          };
+
+    var svg = d3.select('body')
+        .append('svg')
+        .attr({
+          width: width,
+          height: height
+        });
+
+    var mainGroup = svg.append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    var tree = d3.layout.tree()
+        .size([
+            height - (margin.bottom + margin.top),
+            width - (margin.left + margin.right)
+        ]);
+
+    var diagonal = d3.svg.diagonal()
+          .projection(function(d) {
+            return [d.y, d.x];
+    });
+
+    var nodes = tree.nodes(data);
+
+    console.log(nodes);
+
+    var links = tree.links(nodes);
+
+    mainGroup.selectAll('path')
+          .data(links)
+          .enter()
+          .append('path', 'g')
+          .attr({
+              d: diagonal,
+              fill : 'none',
+              stroke: '#ccc',
+              'stroke-width': 2
+          });
+
+    var circleGroups = mainGroup.selectAll('g')
+          .data(nodes)
+          .enter()
+          .append('g')
+          .attr('transform', function (d) {
+              return 'translate(' + d.y + ',' + d.x + ')'});
+
+    circleGroups.append('circle')
+        .attr({
+          r: nodeRadius,
+          fill: '#fff',
+          stroke: 'lightgray',
+          'stroke-width': 1
+        });
+
+    circleGroups.append('text')
+        .text( function(d) {
+            return d.name;
+        })
+        .attr('y', function(d) {
+              return d.children || d._children ?
+                  - nodeRadius * 2 : nodeRadius * 2;
+        })
+        .attr({
+            dy: '.35em',
+            'text-anchor': 'middle',
+            'fill-opacity': 1
+        })
+        .style('font', '12px sans serif');
+
+
+
+
+
+    });
+
+
+    // cluster
+    var url = 'https://gist.githubusercontent.com/d3byex/25129228aa50c30ef01f/raw/2f8664d0eb75ef606f412f9647116954ff0af41d/radial.json'; //url='https://gist.githubusercontent.com/d3byex/25129228aa50c30ef01f/raw/ddc1d7cf560f8fff84dd9005e5bdbdd43b39a91f/flare.json';
+    d3.json(url, function(err, data){
+        var width = 960, height = 1000,
+          nodeRadius = 10,
+          margin = {
+              left: 50, top: 10,
+              bottom: 10, right: 40
+          };
+
+    var svg = d3.select('body')
+        .append('svg')
+        .attr({
+          width: width,
+          height: height
+        });
+
+    var center = width / 2;
+    var mainGroup = svg.append('g')
+          .attr('transform', 'translate(' + center + ',' + center + ')');
+
+    var tree = d3.layout.tree()
+        .size([
+            height - (margin.bottom + margin.top),
+            width - (margin.left + margin.right)
+        ]);
+
+    var cluster = d3.layout.cluster()
+          .size([
+            360,
+            center - 50
+          ]);
+
+    var diagonal = d3.svg.diagonal.radial()
+          .projection(function(d) {
+            return [d.y,
+                    d.x / 180 * Math.PI
+                  ];
+    });
+
+    var nodes = cluster.nodes(data);
+
+    console.log(nodes);
+
+    var links = cluster.links(nodes);
+
+    mainGroup.selectAll('path')
+          .data(links)
+          .enter()
+          .append('path')
+          .attr({
+              d: diagonal,
+              fill : 'none',
+              stroke: '#ccc',
+              'stroke-width': 2
+          });
+
+    var nodeGroups = mainGroup.selectAll('g')
+          .data(nodes)
+          .enter()
+          .append('g')
+          .attr('transform', function (d) {
+              return 'rotate(' + (d.x - 90) + ')translate(' + d.y + ')';
+            });
+
+    nodeGroups.append('circle')
+        .attr({
+          r: nodeRadius,
+          fill: '#fff',
+          stroke: 'lightgray',
+          'stroke-width': 1
+        });
+
+    nodeGroups.append('text')
+        .text( function(d) {
+            return d.name;
+        })
+        .attr('y', function(d) {
+              return d.children || d._children ?
+                  - nodeRadius * 2 : nodeRadius * 2;
+        })
+        .attr({
+            dy: '.35em',
+            'text-anchor': function(d) {
+              return d.x< 180 ? 'start' : 'end';
+            },
+            'transform': function(d) {
+              return d.x < 180 ?
+                          'translate(' + (nodeRadius * 2) + ')' :
+                          'rotate(180)' +
+                          'translate('+ (-nodeRadius*2) + ')';
+            }
+        })
+        .style('font', '12px sans serif');
+
+
+
+
+
+    });
+
+      </script>
+
+  </body>
+</html>

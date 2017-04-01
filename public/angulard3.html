@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title> d3 samples </title>
+
+  </head>
+
+  <body >
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.10/angular.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"> </script>
+    <script src="javascripts/app.js"></script>
+    <script src="javascripts/directives/bars.js"></script>
+    <script src="javascripts/directives/donut.js"></script>
+
+    <script src="javascripts/directives/detail.js"></script>
+    <script src="javascripts/controllers/basic_dashboard.js"></script>
+
+    <div ng-app="dashboardApp" ng-controller="BasicBarsController">
+        <bars-view width="500" height="105" style="display: table-cell; vertical-align: middle"></bars-view>
+        <donut-view width="300" height="300" style="display: table-cell"></donut-view>
+        <details-view data="selectedItem" width="300"></details-view>
+    </div>
+
+  </body>
+</html>

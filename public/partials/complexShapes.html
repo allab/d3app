@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title> d3 samples </title>
+  </head>
+
+  <body >
+
+    <a href = "index.html"> back </a>
+    <br>
+    <script src="http://d3js.org/d3.v3.min.js"
+            charset="utf-8">
+    </script>
+
+    <script>
+
+        <!-- Line Generator !-->
+        var width = 1000, height = 800;
+        var data = [
+          {x:10, y: 10},
+          {x:60, y:60},
+          {x:80, y:10},
+          {x:10, y:10}
+        ];
+
+        var generator = d3.svg.line()
+              .x(function(d) {return d.x; })
+              .y(function(d) {return d.y; });
+
+
+        var svg = d3.select('body')
+                    .append('svg')
+                    .attr({
+                      width: width,
+                      height: height
+                    });
+
+
+        svg.append('path')
+            .datum(data)
+            .attr({
+              d:generator,
+              fill: 'orange',
+              stroke: 'steelblue'
+            });
+
+        svg.append('path')
+            .datum(data)
+            .attr({
+              transform: 'translate(50, 50)',
+              d:generator,
+              fill: 'green',
+              stroke: 'steelblue'
+            });
+            <!-- Areas  !-->
+
+            var data = d3.range(100)
+              .map(function(i){
+                return Math.random() * 30;
+              })
+              .map(function(d,i) {
+                return { x: i*10, y: d}
+              })
+
+
+              var generator = d3.svg.area()
+                    .y0(100)
+                    .x(function(d) { return d.x})
+                    .y1(function(d) { return d.y});
+
+                    svg.append('path')
+                        .datum(data)
+                        .attr({
+                          transform: 'translate(0, 250)',
+                          d:generator,
+                          fill: 'lightgray',
+                          stroke: 'orange'
+                        });
+                <!-- Arc !-->
+
+        var generator = d3.svg.arc()
+              .innerRadius(30)
+              .outerRadius(60)
+              .startAngle(450 * Math.PI * 2 / 360)
+              .endAngle( 270 * Math.PI * 2/ 360);
+
+        svg.append('path')
+            .datum(data)
+            .attr({
+              transform: 'translate(100, 250)',
+              d:generator,
+              fill: 'lightgreen',
+              stroke: 'black',
+              opacity: 0.5
+            });
+
+
+                  <!-- Pie Chart !-->
+
+        var data = [21, 32, 35, 64, 83];
+
+        var pieSegments = d3.layout.pie()(data);
+
+        var arcGenerator = d3.svg.arc()
+              .innerRadius(0)
+              .outerRadius(100)
+              .startAngle(function(d) {
+                  return d.startAngle;
+              })
+              .endAngle( function(d) {
+                  return d.endAngle;
+              });
+        var group = svg.append('g')
+              .attr('transform', 'translate(500,150)');
+
+
+        var colors = d3.scale.category20c();
+        group.selectAll('path')
+            .data(pieSegments)
+            .enter()
+            .append('path')
+            .attr({'d': arcGenerator,
+                  stroke: 'white',
+                  'stroke-width': 2})
+            .style('fill', function(d,i) {
+              return colors(i);
+            });
+
+
+            arcGenerator = d3.svg.arc()
+                  .innerRadius(40)
+                  .outerRadius(100)
+                  .startAngle(function(d) {
+                      return d.startAngle;
+                  })
+                  .endAngle( function(d) {
+                      return d.endAngle;
+                  });
+             group = svg.append('g')
+                        .attr('transform', 'translate(750,150)');
+
+
+            colors = d3.scale.category20b();
+            group.selectAll('path')
+                .data(pieSegments)
+                .enter()
+                .append('path')
+                .attr({'d': arcGenerator,
+                      stroke: 'white',
+                      'stroke-width': 2})
+                .style('fill', function(d,i) {
+                  return colors(i);
+                });
+    <!-- Symbols !-->
+
+    group = svg.append('g')
+               .attr('transform', 'translate(100,0)');
+
+        group.selectAll('path')
+            .data(d3.svg.symbolTypes)
+            .enter()
+            .append('path')
+            .attr({
+              d: d3.svg.symbol().type(function (d) { return d;}),
+              transform: function(d, i) {
+                return 'translate(' + (i * 20 + 10) + ',10)';
+              }
+            });
+
+
+    <!-- Diagonals !-->
+
+    var source = { x:500, y:50, name: 'root' };
+    var targets = [
+      { x:100, y:150, name: 'a' },
+      { x:300, y:150, name: 'b' },
+      { x:500, y:150, name: 'c' },
+      { x:700, y:150 , name: 'd'},
+      { x:900, y:150 , name: 'e'}
+    ];
+
+    var links = targets.map(function (target) {
+      return {source : source, target: target };
+    });
+
+    var subGroup = svg.append('g')
+                      .attr('transform', 'translate(0,350)');
+
+
+    subGroup.selectAll('path')
+        .data(links)
+        .enter()
+        .append('path')
+        .attr({
+            d: d3.svg.diagonal(),
+            fill: 'none',
+            stroke: '#ccc'
+        });
+
+    var nodes = targets.concat(source);
+    var r = 20;
+    var textTranslator = "translate(" +  (function(d) {return d.x; } )/ 2 + ",0)";
+
+
+    subGroup.selectAll('circle')
+         .data(nodes)
+         .enter()
+        .append('circle')
+    .attr({
+          r: r,
+          cx: function(d) {return d.x; },
+          cy: function(d) {return d.y; },
+          fill: 'orange',
+          stroke: '#333'
+    });
+
+
+    var texts = subGroup.selectAll('text')
+      .data(nodes)
+      .enter();
+
+    texts.append('text')
+             .text(function(d) { return d.name; })
+             .attr({
+               fill: 'black',
+               'alignment-baseline': 'after-edge',
+               'text-anchor': 'middle',
+               transform: function (d) {
+                   var x = d.x;
+                   var y = d.y;
+                   var t = 'translate(' + x + ',' + y + ')';
+                   return t;
+               }
+             })
+             .style('font', '10px sans-serif');
+
+
+
+
+      </script>
+
+  </body>
+</html>

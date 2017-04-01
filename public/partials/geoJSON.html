@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title> d3 samples </title>
+  </head>
+
+  <body >
+
+    <a href = "index.html"> back </a>
+    <br>
+    <script src="http://d3js.org/d3.v3.min.js"
+            charset="utf-8">
+    </script>
+
+     <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+    <script>
+
+      var width = 1100, height = 800;
+      var zoom = d3.behavior.zoom()
+            .scaleExtent([1,5])
+            .on('zoom', moveAndZoom);
+
+
+      var svg = d3.select('body')
+        .append('svg')
+        .attr({
+          width: width,
+          height: height
+        })
+        .call(zoom);
+
+
+
+        var mainGroup = svg.append('g');
+
+        mainGroup.style({
+          stroke: 'white',
+          'stroke-width': 2,
+          'stroke-opacity': 0.0
+        });
+
+
+        function moveAndZoom() {
+          console.log('M&Z');
+          var t = d3.event.translate;
+          var s = d3.event.scale;
+
+          var x = Math.min(
+            (width / height) * (s - 1),
+            Math.max(width * (1 - s), t[0]));
+
+            var h = height / 4;
+            var y = Math.min(
+              h * (s - 1) + h * s,
+              Math.max(height * (1 - s) - h * s, t[1])
+            );
+
+            mainGroup.style('stroke-width', ((1/s)*2) + "px");
+            mainGroup.attr('transform', 'translate(' + x + ',' + y + ')scale(' + s + ')');
+
+        }
+    //var url = 'https://gist.githubusercontent.com/d3byex/65a128a9a499f7f0b37d/raw/176771c2f08dbd3431009ae27bef9b2f2fb56e36/us-states.json';
+  //  var url = '/data/canada1.json';
+  var url = 'https://gist.githubusercontent.com/d3byex/65a128a9a499f7f0b37d/raw/176771c2f08dbd3431009ae27bef9b2f2fb56e36/world-110m.json';
+
+    d3.json(url, function (error, world) {
+      
+       var projection = d3.geo.mercator()
+                .scale((width + 1) / 2 / Math.PI)
+                .translate([width/2, height/2]);
+      // var projection = d3.geo.orthographic()
+      //         .scale(300)
+      //         .clipAngle(90)
+      //         .translate([width/2, height/2])
+      //         .rotate([90, -40]);
+
+      var path = d3.geo.path()
+            .projection(projection);
+
+      var color = d3.scale.category20();
+
+      var graticule = d3.geo.graticule();
+      var countries = topojson.feature(world, world.objects.countries).features;
+
+      var neighbors = topojson.neighbors(world.objects.countries.geometries);
+
+
+
+
+      mainGroup.append('path')
+          .datum(graticule)
+          .attr('d', path)
+          .style({
+            fill: 'none',
+            stroke: '#777',
+            'stroke-width': '.5px',
+            'stroke-opacity': 0.5
+          });
+
+
+      mainGroup.selectAll('path')
+          .data(countries)
+          .enter()
+          .append('path')
+          .attr('d', path)
+          .attr({'stroke': 'green',
+                 'stroke-width' : 1})
+          .style('fill', 'lightgray');
+
+
+
+    mainGroup.selectAll('.country')
+        .data(countries)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .style('fill', function(d, i){
+            return color(d.color = d3.max(neighbors[i],
+                function(n) {
+                    return countries[n].color;
+                })
+              + 1 | 0);
+        });
+
+
+
+
+
+            mainGroup.selectAll('path')
+                    .on('mouseover', function() {
+                      d3.select(this).style('stroke-opacity', 1.0);
+                    });
+            mainGroup.selectAll('path')
+                    .on('mouseout', function() {
+                      d3.select(this).style('stroke-opacity', 0.0);
+                    });
+
+});
+      </script>
+
+  </body>
+</html>

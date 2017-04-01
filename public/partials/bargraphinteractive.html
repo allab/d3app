@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+  </head>
+
+  <body >
+    <a href = "index.html"> back </a>
+    <br>
+    <script src="http://d3js.org/d3.v3.min.js"
+            charset="utf-8">
+    </script>
+
+    <!-- Bar Graph !-->
+    <script>
+    var url = "https://gist.githubusercontent.com/d3byex/a85e18c77b31628e9e94/raw/ddb806f1299114952bc5dc7baf6413dafc8bbb13/fert_pop_lac.csv";
+    d3.csv(url, function(error, rawData){
+      if (error) {
+        console.log('err' + error);
+      }
+    var data = rawData.map(function(d) {
+      return {
+                 CountryCode: d.CountryCode,
+                 CountryName: d.CountryName,
+                 LifeExp: +d.LifeExp,
+                 FertRate: +d.FertRate,
+                 Population: +d.Population,
+                 Region: d.Region
+             };
+    });
+
+
+
+    var barGrowDuration = 1000;
+    var returnToColorDuration = 250;
+    var minOpacity = 0.3;
+    var maxOpacity = 1.0;
+    var axisPadding = 3;
+    var verticalTextOffsetX = 4;
+    var verticalTextOffsetY = 30;
+
+    var width = 950, height = 400;
+    var lifeExpectancy = data.map(function(d) {return d.LifeExp; });
+    var lifeExpectancyExtent = d3.extent(lifeExpectancy);
+
+    var xScale = d3.scale.ordinal()
+        .domain(d3.range(data.length))
+        .rangeRoundBands([0,width], 0.05);
+
+    var yScale = d3.scale.linear()
+        .domain([lifeExpectancyExtent[0] * 0.8, lifeExpectancyExtent[1] * 1.0])
+        .range([0, height]);
+
+    var colorScale = d3.scale.linear()
+          .domain([lifeExpectancyExtent[0], lifeExpectancyExtent[1]])
+          .range([50,250]);
+
+    var barWidth = xScale.rangeBand();
+    var svg = d3.select('body')
+        .append('svg')
+        .attr({
+          width: width,
+          height: height
+        });
+    // svg.on('mousemove', function() {
+    //     var position = d3.mouse(svg.node());
+    //     label.text('x='+ position[0] + ', y=' + position[1]);
+    //   })
+      svg.selectAll('rect')
+          .data(data)
+          .enter()
+          .append('rect')
+          .attr({
+            width: xScale.rangeBand(),
+            height: 0,
+            y: height
+          })
+
+          .on('mouseover', function(d) {
+              d3.select('text.vert#' + d.CountryCode)
+                .style('opacity', maxOpacity);
+                d3.select(this).attr('fill', 'orange');
+          })
+
+          .on('mouseout', function(d) {
+              d3.select('text.vert#' + d.CountryCode)
+                .style('opacity', minOpacity);
+              d3.select(this)
+                .transition()
+                .duration(returnToColorDuration)
+                .attr('fill', 'rgb(0,0,' + Math.floor(colorScale(d.LifeExp)) + ')');
+          })
+
+          .transition()
+          .duration(barGrowDuration)
+          .attr({
+            height: function(d) {return yScale(d.LifeExp);},
+            x: function(d, i) {return xScale(i);},
+            y: function(d) { return height - yScale(d.LifeExp);
+            },
+            fill: function(d) {
+              return 'rgb(0,0,' + Math.floor(colorScale(d.LifeExp)) + ')';
+            }
+          });
+
+          svg.selectAll('text')
+                .data(data)
+                .enter()
+                .append('text')
+                .text(function (d) { return d.CountryCode; })
+                .attr({
+                    x: function (d, i) { return xScale(i) + barWidth / 2; },
+                    y: height,
+                    fill: 'white',
+                    'text-anchor': 'middle',
+                    'font-family': 'sans-serif',
+                    'font-size': '11px'
+                })
+                .transition()
+                .duration(barGrowDuration)
+                .attr('y', function (d) { return height - yScale(d.LifeExp) + 14; });
+
+            svg.selectAll('text.vert')
+                .data(data)
+                .enter()
+                .append('text')
+                .text(function (d) { return d.LifeExp.toFixed(2) + ' ' + d.CountryName; })
+                .attr({
+                    id: function (d) { return d.CountryCode; },
+                    opacity: 0.3,
+                    transform: function (d, i) {
+                        var x = xScale(i) + (barWidth/2) - verticalTextOffsetX;
+                        var y = height - yScale(d.LifeExp) + verticalTextOffsetY;
+                        var t = 'translate(' + x + ',' + y + ')rotate(90)';
+                        return t;
+                    },
+                    'class': 'vert',
+                    'font-family': 'sans-serif',
+                    'font-size': 11,
+                    'fill': 'white'
+                });
+
+
+  });
+
+
+    </script>
+
+  </body>
+</html>
